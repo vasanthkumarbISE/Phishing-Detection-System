@@ -4,6 +4,10 @@ A Python Flask-based Phishing Detection System integrating machine learning, URL
 
 A web-based **Phishing Detection System** designed to help users identify suspicious URLs and improve online security awareness. The project uses Python, Flask, and a machine-learning model from Hugging Face to explore URL security and phishing-related analysis.
 
+##  OutPut:
+<img width="1447" height="691" alt="image" src="https://github.com/user-attachments/assets/d77a448d-dbf0-4c6f-84fd-5da98d870466" />
+
+
 ## 🚀 Features
 
 - **URL Analysis:** Enter a URL for analysis through the web interface.
