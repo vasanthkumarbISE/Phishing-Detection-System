@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Phishing Detection</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            width: 400px; 
+            min-height: 500px;
+            margin: 0;
+            padding: 0;
+        }
+        .container-fluid {
+            padding: 10px;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 0;
+        }
+        .url-input {
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        .check-btn {
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .results-container {
+            display: none;
+            margin-top: 15px;
+        }
+        .tab-content {
+            max-height: 450px;
+            overflow-y: auto;
+        }
+        .nav-tabs .nav-link {
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary py-2">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h6">
+                <i class="fas fa-shield-alt me-2"></i>Phishing Detection
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid p-2">
+        <ul class="nav nav-tabs mb-2" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="check-tab" data-bs-toggle="tab" data-bs-target="#check" type="button" role="tab">Check URL</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="education-tab" data-bs-toggle="tab" data-bs-target="#education" type="button" role="tab">Learn</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Check URL Tab -->
+            <div class="tab-pane fade show active" id="check" role="tabpanel">
+                <div class="text-center mb-2">
+                    <h6 class="text-dark mb-2">Enter URL to Analyze</h6>
+                </div>
+                
+                <div class="input-group mb-2">
+                    <input type="url" id="urlInput" class="form-control url-input" 
+                           placeholder="https://example.com" 
+                           required>
+                    <button class="btn btn-primary check-btn" type="button" id="analyzeBtn">
+                        <i class="fas fa-robot me-1"></i>Analyze
+                    </button>
+                </div>
+                
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <button class="btn btn-outline-secondary btn-sm w-100" id="currentPageBtn">
+                            <i class="fas fa-globe me-1"></i>Current Page
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-outline-info btn-sm w-100" id="examplesBtn">
+                            <i class="fas fa-lightbulb me-1"></i>Examples
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="loading" id="loadingSection">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 small">Analyzing URL...</p>
+                </div>
+
+                <div class="results-container" id="resultsContainer">
+                    <div id="resultsContent"></div>
+                </div>
+            </div>
+
+            <!-- Education Tab -->
+            <div class="tab-pane fade" id="education" role="tabpanel">
+                <h6 class="text-center mb-3">Stay Safe Online</h6>
+                
+                <div class="card feature-card h-100 shadow-sm mb-2">
+                    <div class="card-body text-center p-2">
+                        <i class="fas fa-shield-alt fa-2x text-primary mb-1"></i>
+                        <h6 class="mb-1">HTTPS Protection</h6>
+                        <p class="small mb-0">Always look for HTTPS and the lock icon in your browser.</p>
+                    </div>
+                </div>
+                
+                <div class="card feature-card h-100 shadow-sm mb-2">
+                    <div class="card-body text-center p-2">
+                        <i class="fas fa-eye fa-2x text-warning mb-1"></i>
+                        <h6 class="mb-1">Verify URLs</h6>
+                        <p class="small mb-0">Check domain names carefully for spoofing attempts.</p>
+                    </div>
+                </div>
+                
+                <div class="card feature-card h-100 shadow-sm">
+                    <div class="card-body text-center p-2">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-1"></i>
+                        <h6 class="mb-1">Suspicious Signs</h6>
+                        <p class="small mb-0">Be wary of urgent language and shortened URLs.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
