@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Safety Analyzer</title>
+<style>
+:root {
+  --navy:#202629; --blue:#2878f0; --green:#198754; --yellow:#ffbd08;
+  --red:#dc3545; --purple:#7054b8; --ink:#303943; --muted:#74808c;
+  --line:#e7eaee; --bg:#f7f8fa;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#fff;font-size:14px}
+nav{height:auto;min-height:42px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:10px max(4%,calc((100% - 1200px)/2));gap:18px;flex-wrap:wrap}
+.brand{font-size:16px;white-space:nowrap}.brand span{margin-right:7px}
+.navlinks{display:flex;gap:15px;align-items:center;flex-wrap:wrap}
+.navlinks a{color:#cbd1d6;text-decoration:none;font-size:12px;cursor:pointer}
+.navlinks a:hover,.navlinks a.active{color:white}
+main{max-width:1200px;margin:0 auto;padding:22px 4% 45px}
+.page{display:none}.page.active{display:block}
+.page-title{font-size:29px;font-weight:300;margin:0 0 7px;color:#525a60}
+.subtitle{color:var(--muted);margin:0 0 24px;line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:15px 0 22px}
+.stat{padding:17px 12px;text-align:center;color:white;border-radius:3px;min-height:98px;box-shadow:0 1px 3px #00000012}
+.stat .symbol{font-size:21px;font-weight:bold;margin-bottom:5px}.stat .number{font-size:20px;font-weight:bold;margin-bottom:5px}.stat .label{font-size:12px}
+.purple{background:linear-gradient(120deg,#6879e9,#7750ad)}.green{background:#198754}.yellow{background:#ffbd08;color:#252525}.red{background:#df3042}
+.features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.feature{padding:19px 16px 15px;border:1px solid #edf0f2;border-radius:3px;box-shadow:0 2px 5px #00000010;text-align:center}
+.feature .big-icon{font-size:30px;font-weight:bold;margin-bottom:6px}.feature h3{font-size:16px;font-weight:500;margin:0 0 9px}.feature p{font-size:12px;color:#4e5962;line-height:1.55;min-height:56px;margin:0 0 9px}
+.feature ul{padding:0;margin:0 0 15px;list-style:none;text-align:left;font-size:12px;line-height:1.7}
+.feature li:before{content:"✓ ";color:#198754;font-weight:bold}
+.btn{display:inline-block;border:0;border-radius:3px;padding:10px 14px;color:#fff;background:var(--blue);font-weight:600;font-size:13px;cursor:pointer;text-decoration:none}
+.btn:hover{filter:brightness(.94)}.btn.full{width:100%}.btn.green-btn{background:var(--green)}.btn.yellow-btn{background:#ffbd08;color:#222}.btn.gray-btn{background:#66717b}
+.panel{border:1px solid var(--line);border-radius:4px;margin:17px 0;background:#fff;box-shadow:0 1px 3px #00000008}
+.panel-heading{padding:11px 14px;font-weight:bold;background:#f8f9fa;border-bottom:1px solid var(--line)}
+.panel-body{padding:16px}
+.search-heading{background:#ffbd08;color:#242424;padding:10px 14px;font-weight:bold}
+.search-row{display:grid;grid-template-columns:minmax(180px,1fr) 150px 95px;gap:12px;align-items:end}
+label{display:block;font-size:12px;font-weight:bold;margin-bottom:7px}
+input,select{width:100%;padding:11px 12px;border:1px solid #d9dfe5;border-radius:4px;font:inherit;background:#fff}
+input:focus,select:focus{outline:2px solid #b7d3ff;border-color:#6ea8fe}
+.overview-title{font-weight:bold;margin:0 0 12px}.mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.mini-stat{border:1px solid var(--line);padding:13px;text-align:center;border-radius:3px}
+.mini-stat strong{display:block;font-size:21px;margin-bottom:6px}.mini-stat span{font-size:11px;color:var(--muted)}
+.results-meta{font-size:11px;color:var(--muted);margin:18px 0 10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pill{display:inline-block;color:white;padding:3px 6px;border-radius:3px;font-size:10px;font-weight:bold;margin-left:4px}
+.pill.safe{background:#198754}.pill.medium{background:#ffbd08;color:#222}.pill.high{background:#dc3545}
+.result-card{border:1px solid #e7eaee;border-left:3px solid #198754;margin:12px 0;padding:14px 13px;border-radius:3px;box-shadow:0 2px 6px #00000008}
+.result-card.medium-risk{border-left-color:#ffbd08}.result-card.high-risk{border-left-color:#dc3545}
+.result-top{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.result-title{color:#0645ad;font-weight:bold;text-decoration:none;overflow-wrap:anywhere}
+.risk{white-space:nowrap;text-align:center;font-size:10px;color:#66717b}.risk strong{display:block;color:#fff;padding:4px 6px;border-radius:3px;margin-bottom:3px}
+.url{font-size:12px;color:#26876a;margin:13px 0 8px;overflow-wrap:anywhere}
+.description{font-size:12px;color:#68737c;line-height:1.5}
+.notice{background:#d1e7dd;color:#155b40;border-radius:3px;padding:9px 10px;font-size:11px;margin-top:10px}
+.notice.warning{background:#fff3cd;color:#785b05}.notice.danger{background:#f8d7da;color:#842029}
+.recommendation{font-size:11px;margin-top:10px}.small-btn{font-size:11px;padding:5px 8px;margin-left:8px;background:#fff;color:#2878f0;border:1px solid #a9c9ff;border-radius:3px;cursor:pointer}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.muted{color:var(--muted);font-size:12px;line-height:1.6}
+.empty{padding:25px;text-align:center;color:var(--muted)}
+footer{text-align:center;color:#87919a;font-size:11px;padding:18px;border-top:1px solid var(--line)}
+.toast{display:none;padding:12px;background:#fff3cd;color:#664d03;border-radius:4px;margin:12px 0;font-size:12px}
+@media(max-width:760px){nav{align-items:flex-start}.navlinks{gap:10px}.stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:1fr}.feature p{min-height:0}.search-row{grid-template-columns:1fr}.mini-stats{grid-template-columns:repeat(2,1fr)}.page-title{font-size:25px}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand"><span>⬟</span> URL Safety Analyzer</div>
+  <div class="navlinks">
+    <a href="#" class="active" data-page="dashboard">Dashboard</a>
+    <a href="#" data-page="single">Single Analysis</a>
+    <a href="#" data-page="batch">Batch Analysis</a>
+    <a href="#" data-page="search">Search &amp; Analyze</a>
+    <a href="#" data-page="history">History</a>
+    <a href="#" id="logoutLink">Logout (<span id="username">User</span>)</a>
+  </div>
+</nav>
+
+<main>
+<section id="dashboard" class="page active">
+  <h1 class="page-title">◉ Dashboard <span style="color:#9aa2aa">Welcome back, <span id="welcomeName">User</span>!</span></h1>
+  <div class="stats">
+    <div class="stat purple"><div class="symbol">↗</div><div class="number" id="totalCount">0</div><div class="label">Total Analyses</div></div>
+    <div class="stat green"><div class="symbol">●✓</div><div class="number" id="safeCount">0</div><div class="label">Safe URLs</div></div>
+    <div class="stat yellow"><div class="symbol">⚠</div><div class="number" id="mediumCount">0</div><div class="label">Medium Risk</div></div>
+    <div class="stat red"><div class="symbol">☠</div><div class="number" id="highCount">0</div><div class="label">High Risk</div></div>
+  </div>
+  <div class="features">
+    <article class="feature">
+      <div class="big-icon" style="color:#0d6efd">⌕</div><h3 style="color:#0d6efd">Single URL Analysis</h3>
+      <p>Check individual URLs for security threats, phishing attempts, and suspicious patterns.</p>
+      <ul><li>Detailed security analysis</li><li>Phishing detection</li><li>Malware warning (if supported by backend)</li><li>Real-time results</li></ul>
+      <button class="btn full" data-goto="single">⌕ Start Single Analysis</button>
+    </article>
+    <article class="feature">
+      <div class="big-icon" style="color:#198754">▰</div><h3 style="color:#198754">Batch URL Checking</h3>
+      <p>Analyze multiple URLs simultaneously. Useful for checking URL lists and datasets.</p>
+      <ul><li>Analyze multiple URLs at once</li><li>Bulk security assessment</li><li>Comparative risk analysis</li><li>Review results</li></ul>
+      <button class="btn full green-btn" data-goto="batch">ϟ Start Batch Analysis</button>
+    </article>
+    <article class="feature">
+      <div class="big-icon" style="color:#ffbd08">⌕</div><h3 style="color:#ffbd08">Search &amp; Analyze</h3>
+      <p>Search for a topic and review results with risk indicators. Search integration must be configured.</p>
+      <ul><li>Search provider integration</li><li>Review result URLs</li><li>Risk scoring when available</li><li>Re-analyze URLs</li></ul>
+      <button class="btn full yellow-btn" data-goto="search">⌕ Start Search &amp; Analyze</button>
+    </article>
+  </div>
+</section>
+
+<section id="single" class="page">
+  <h1 class="page-title">Single URL Analysis</h1>
+  <p class="subtitle">Enter a URL to submit it to your configured phishing-detection backend.</p>
+  <div class="panel"><div class="panel-heading">Website URL</div><div class="panel-body">
+    <form id="singleForm">
+      <label for="singleUrl">URL to analyze</label><input id="singleUrl" type="url" placeholder="https://example.com" required>
+      <button class="btn" type="submit" id="singleSubmit">Analyze URL</button>
+    </form>
+    <div id="singleOutput"></div>
+    <p class="muted">A prediction is not a guarantee that a website is safe. Never enter banking credentials into a suspicious website.</p>
+  </div></div>
+</section>
+
+<section id="batch" class="page">
+  <h1 class="page-title">Batch URL Analysis</h1>
+  <p class="subtitle">Submit multiple URLs, one URL per line. This page sends each URL individually to the configured backend.</p>
+  <div class="panel"><div class="panel-heading">Batch Checking</div><div class="panel-body">
+    <form id="batchForm">
+      <label for="batchUrls">Website URLs</label><textarea id="batchUrls" rows="7" style="width:100%;padding:12px;border:1px solid #d9dfe5;border-radius:4px;font:inherit" placeholder="https://example.com&#10;https://example.org" required></textarea>
+      <br><br><button class="btn green-btn" type="submit" id="batchSubmit">Analyze URLs</button>
+    </form>
+    <div id="batchOutput"></div>
+  </div></div>
+</section>
+
+<section id="search" class="page">
+  <h1 class="page-title">Search &amp; Analyze</h1>
+  <p class="subtitle">Search for a topic and analyze result URLs. Connect a search API to enable live web search; this demo does not scrape Google.</p>
+  <div class="panel">
+    <div class="search-heading">⌕ Google Search</div>
+    <div class="panel-body">
+      <form id="searchForm" class="search-row">
+        <div><label for="searchQuery">Search Query:</label><input id="searchQuery" placeholder="e.g. online banking" required></div>
+        <div><label for="contentType">Content Type:</label><select id="contentType"><option>All Results</option><option>Websites</option><option>News</option><option>Educational</option></select></div>
+        <button class="btn" type="submit">⌕ Search</button>
+      </form>
+      <div id="searchMessage" class="toast"></div>
+    </div>
+  </div>
+  <div id="searchResults"></div>
+</section>
+
+<section id="history" class="page">
+  <h1 class="page-title">Analysis History</h1>
+  <p class="subtitle">URLs analyzed during this browser session.</p>
+  <div class="panel"><div class="panel-heading">Recent Analyses <button id="clearHistory" class="small-btn" style="float:right">Clear History</button></div><div class="panel-body" id="historyList"><div class="empty">No URLs analyzed yet.</div></div></div>
+</section>
+</main>
+<footer>URL Safety Analyzer · E-Banking Phishing Detection · Use results as guidance, not a guarantee of safety.</footer>
+
+<script>
+/*
+  Configure this endpoint to match your backend.
+  Expected request: POST JSON { "url": "https://example.com" }
+  Expected response examples:
+    { "prediction": "phishing", "risk_score": 92 }
+    { "prediction": "legitimate", "risk_score": 10 }
+  Change API_URL if your backend uses a different port or route.
+*/
+const API_URL = "http://127.0.0.1:5000/predict";
+const DEMO_MODE = false; // Set true only to preview with clearly labeled simulated results.
+const historyItems = [];
+const $ = id => document.getElementById(id);
+
+function showPage(name) {
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === name));
+  document.querySelectorAll("[data-page]").forEach(a => a.classList.toggle("active", a.dataset.page === name));
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+document.querySelectorAll("[data-page]").forEach(a => a.addEventListener("click", e => {e.preventDefault();showPage(a.dataset.page)}));
+document.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => showPage(b.dataset.goto)));
+$("logoutLink").addEventListener("click", e => {e.preventDefault();alert("Connect this action to your authentication/logout route.");});
+
+function normalizePrediction(data) {
+  const raw = String(data.prediction ?? data.result ?? data.status ?? data.label ?? "").toLowerCase();
+  let risk = Number(data.risk_score ?? data.score ?? NaN);
+  if (!Number.isFinite(risk)) {
+    if (["phishing","malicious","unsafe","high risk","high"].includes(raw)) risk = 90;
+    else if (["suspicious","medium risk","medium"].includes(raw)) risk = 55;
+    else if (["legitimate","safe","benign","low risk","low"].includes(raw)) risk = 10;
+  }
+  let level = "unknown";
+  if (["phishing","malicious","unsafe","high risk","high"].includes(raw) || risk >= 70) level = "high";
+  else if (["suspicious","medium risk","medium"].includes(raw) || (risk >= 35 && risk < 70)) level = "medium";
+  else if (["legitimate","safe","benign","low risk","low"].includes(raw) || (Number.isFinite(risk) && risk < 35)) level = "safe";
+  return {level, risk:Number.isFinite(risk)?risk:null, raw};
+}
+async function analyzeURL(url) {
+  if (DEMO_MODE) {
+    const suspicious = /verify|account-update|secure-login|free-prize|password-reset/i.test(url);
+    return {url, prediction:suspicious?"phishing":"legitimate", risk_score:suspicious?84:10, demo:true};
+  }
+  const response = await fetch(API_URL, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({url})
+  });
+  let data;
+  try { data = await response.json(); } catch { throw new Error("Backend returned an unreadable response."); }
+  if (!response.ok) throw new Error(data.error || `Backend error (${response.status}).`);
+  return {url, ...data};
+}
+function addHistory(url, data) {
+  const result = normalizePrediction(data);
+  historyItems.unshift({url, result, time:new Date().toLocaleTimeString()});
+  updateDashboard(); renderHistory();
+}
+function updateDashboard() {
+  $("totalCount").textContent = historyItems.length;
+  $("safeCount").textContent = historyItems.filter(x=>x.result.level==="safe").length;
+  $("mediumCount").textContent = historyItems.filter(x=>x.result.level==="medium").length;
+  $("highCount").textContent = historyItems.filter(x=>x.result.level==="high").length;
+}
+function makeResultCard(url, data) {
+  const r = normalizePrediction(data);
+  const card = document.createElement("article");
+  card.className = "result-card " + (r.level==="medium"?"medium-risk":r.level==="high"?"high-risk":"");
+  const top = document.createElement("div"); top.className="result-top";
+  const title = document.createElement("a"); title.className="result-title"; title.href=url; title.target="_blank"; title.rel="noopener noreferrer"; title.textContent=url;
+  const risk = document.createElement("div"); risk.className="risk";
+  const badge = document.createElement("strong");
+  badge.style.background = r.level==="high"?"#dc3545":r.level==="medium"?"#ffbd08":"#198754";
+  badge.style.color = r.level==="medium"?"#222":"#fff";
+  badge.textContent = r.risk===null ? r.level.toUpperCase() : `${r.risk}% Risk`;
+  risk.append(badge, document.createTextNode(r.level==="high"?"HIGH RISK":r.level==="medium"?"MEDIUM RISK":r.level==="safe"?"LOW RISK":"UNCLASSIFIED"));
+  top.append(title,risk); card.append(top);
+  const u=document.createElement("div");u.className="url";u.textContent=url;card.append(u);
+  const note=document.createElement("div");note.className="notice "+(r.level==="high"?"danger":r.level==="medium"?"warning":"");
+  note.textContent = r.level==="high"?"⚠ Potential phishing indicators detected. Avoid entering sensitive information.":r.level==="medium"?"⚠ Some indicators require caution. Verify the website independently.":r.level==="safe"?"✓ The model classified this URL as low risk. This does not guarantee safety.":"The backend response did not contain a recognized classification.";
+  card.append(note);
+  if(data.demo){const demo=document.createElement("p");demo.className="muted";demo.textContent="Demo result — simulated, not a real security analysis.";card.append(demo);}
+  const rec=document.createElement("div");rec.className="recommendation";rec.append(document.createTextNode("Recommendation: "+(r.level==="high"?"Do not enter credentials; verify through an official channel.":r.level==="medium"?"Proceed cautiously and verify the domain.":"No obvious risk was reported by the configured model.")));
+  const again=document.createElement("button");again.className="small-btn";again.textContent="↻ Re-analyze";
+  again.addEventListener("click",async()=>{again.disabled=true;again.textContent="Checking...";try{const d=await analyzeURL(url);addHistory(url,d);card.replaceWith(makeResultCard(url,d));}catch(e){alert(e.message)}finally{again.disabled=false;}});
+  rec.append(again);card.append(rec);
+  return card;
+}
+function showInlineError(target, message) {
+  target.replaceChildren();const box=document.createElement("div");box.className="notice warning";box.textContent=message;target.append(box);
+}
+$("singleForm").addEventListener("submit",async e=>{
+  e.preventDefault();const url=$("singleUrl").value.trim(),btn=$("singleSubmit"),out=$("singleOutput");
+  btn.disabled=true;btn.textContent="Analyzing...";out.replaceChildren();
+  try{const data=await analyzeURL(url);addHistory(url,data);out.append(makeResultCard(url,data));}
+  catch(err){showInlineError(out,`Could not analyze this URL: ${err.message} Check that your backend is running at ${API_URL} and that CORS is configured if needed.`);}
+  finally{btn.disabled=false;btn.textContent="Analyze URL";}
+});
+$("batchForm").addEventListener("submit",async e=>{
+  e.preventDefault();const urls=[...new Set($("batchUrls").value.split(/\n|,|;/).map(x=>x.trim()).filter(Boolean))],btn=$("batchSubmit"),out=$("batchOutput");
+  if(!urls.length)return;btn.disabled=true;btn.textContent="Analyzing...";out.replaceChildren();
+  for(const url of urls){
+    try{const parsed=new URL(url);if(!["http:","https:"].includes(parsed.protocol))throw new Error("Only HTTP/HTTPS URLs are supported.");
+      const data=await analyzeURL(url);addHistory(url,data);out.append(makeResultCard(url,data));
+    }catch(err){const item=document.createElement("div");item.className="notice warning";item.textContent=`${url}: ${err.message}`;out.append(item);}
+  }
+  btn.disabled=false;btn.textContent="Analyze URLs";
+});
+$("searchForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const query=$("searchQuery").value.trim(),msg=$("searchMessage");
+  msg.style.display="block";
+  msg.textContent=`Search integration is not connected. To show real results for "${query}", connect a search provider API on your backend, then analyze each returned URL using the prediction endpoint.`;
+  $("searchResults").replaceChildren();
+});
+function renderHistory(){
+  const root=$("historyList");root.replaceChildren();
+  if(!historyItems.length){root.innerHTML='<div class="empty">No URLs analyzed yet.</div>';return;}
+  historyItems.forEach(item=>{
+    const wrap=document.createElement("div");wrap.style.marginBottom="14px";
+    const time=document.createElement("p");time.className="muted";time.textContent=item.time;
+    wrap.append(time,makeResultCard(item.url,item.result));root.append(wrap);
+  });
+}
+$("clearHistory").addEventListener("click",()=>{historyItems.length=0;updateDashboard();renderHistory();});
+const userName = new URLSearchParams(location.search).get("user") || "User";
+$("username").textContent=userName;$("welcomeName").textContent=userName;
+</script>
+</body>
+</html>
